@@ -2,9 +2,11 @@ const express = require('express');
 const bcrypt = require('bcrypt');
 const _ = require('underscore'); //guion bajo por estandar para usar underscore
 const Usuario = require('../models/usuario');
+const { verificarToken, verificarAdmin_Role } = require('../middlewares/autenticacion');
 const app = express();
 
-app.get('/usuario', function(req, res) {
+//Obtener usuarios
+app.get('/usuario', verificarToken, function(req, res) {
     let desde = req.query.desde || 0;
     let iDesde = isNaN(desde) ? 0 : Number(desde);
 
@@ -36,7 +38,8 @@ app.get('/usuario', function(req, res) {
         });
 });
 
-app.post('/usuario', function(req, res) {
+//Crear usuario
+app.post('/usuario', [verificarToken, verificarAdmin_Role], function(req, res) {
     let body = req.body;
 
     let usuario = new Usuario({
@@ -64,7 +67,7 @@ app.post('/usuario', function(req, res) {
 });
 
 //Usado por convencion para actualizar datos
-app.put('/usuario/:idUsuario', function(req, res) {
+app.put('/usuario/:idUsuario', [verificarToken, verificarAdmin_Role], function(req, res) {
     let id = req.params.idUsuario;
     //Con el pick se filtran del objeto original las propiedades indicadas en el arreglo, 
     //es decir solo tendra las indicadas en el arreglo
@@ -116,7 +119,7 @@ app.put('/usuario/:idUsuario', function(req, res) {
 // });
 
 //Actualiza el estado a falso
-app.delete('/usuario/:idUsuario', function(req, res) {
+app.delete('/usuario/:idUsuario', [verificarToken, verificarAdmin_Role], function(req, res) {
     let id = req.params.idUsuario;
     let usuarioInhabilitar = {
         estado: false
